@@ -10,7 +10,7 @@ import argparse
 print("Loading data...")
 
 # Initialize Ollama client with remote host
-ollama_client = ollama.Client(host="http://3.238.200.222:11434")
+ollama_client = ollama.Client()
 
 # Parse command line arguments
 parser = argparse.ArgumentParser(description='Build FAISS index for battlefield events.')
@@ -21,6 +21,7 @@ def get_embeddings(texts, batch_size=args.batch_size):
     embeddings = []
     for i in range(0, len(texts), batch_size):
         batch = texts[i:i + batch_size]
+        print(f"Processing records: {i} - {i+batch_size}")
         response = ollama_client.embed(
             model="mxbai-embed-large:latest",
             input=batch
