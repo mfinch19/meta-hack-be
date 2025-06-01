@@ -10,6 +10,8 @@ import re
 import faiss
 import numpy as np
 from llama_api_client import LlamaAPIClient
+# Import datetime for current time context
+import datetime
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -142,7 +144,7 @@ FORMAT: Return as comma-separated list, highest priority first.
                 logger.warning("Unexpected keyword response format")
         
         # Enhance the original prompt with keywords for better RAG matching
-        enhanced_prompt = f"Original query: {request.message}\nRelevant keywords: {keywords}\n"
+        enhanced_prompt = f"Original query: {request.message}\nRelevant keywords: {keywords}\nCurrent Date and Time (UTC): {datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}\n"
         
         # Now process the enhanced prompt with the original logic
         response = client.chat.completions.create(
