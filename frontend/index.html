@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battlefield Analyst AI</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBJ1Kba0bvGWcsvr_jTx49PslExz5ivAq8&callback=initMap" async defer></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Battlefield Analyst AI</h1>
+            <p>Your AI-powered battlefield analysis assistant</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
+            
+            <div class="chat-container">
+                <div class="chat-messages" id="chat-messages">
+                    <div class="message system">
+                        <div class="message-content">
+                            Welcome to the Battlefield Analyst AI. I can help you analyze battlefield situations, assess threats, and provide strategic insights. How can I assist you today?
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chat-input">
+                    <textarea id="user-input" placeholder="Type your message here..." rows="3"></textarea>
+                    <button id="send-button">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html> 
