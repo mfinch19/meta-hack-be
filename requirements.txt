@@ -6,4 +6,5 @@ python-dotenv==1.0.0
 llama-index
 llama-index-readers-file
 sentence-transformers
-faiss-cpu 
+faiss-cpu
+llama-api-client==0.1.0 

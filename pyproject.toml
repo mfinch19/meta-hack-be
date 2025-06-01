@@ -1,0 +1,18 @@
+[project]
+name = "meta-hack-be"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi==0.95.2",
+    "uvicorn==0.22.0",
+    "pydantic==1.10.7",
+    "requests==2.31.0",
+    "python-dotenv==1.0.0",
+    "llama-index",
+    "llama-index-readers-file",
+    "sentence-transformers",
+    "faiss-cpu",
+    "llama-api-client>=0.1.1",
+]

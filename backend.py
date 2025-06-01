@@ -10,6 +10,7 @@ import re
 import faiss
 import numpy as np
 from sentence_transformers import SentenceTransformer
+from llama_api_client import LlamaAPIClient
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -26,6 +27,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Get API key from environment variable
+LLAMA_API_KEY = os.getenv("LLAMA_API_KEY")
+if not LLAMA_API_KEY:
+    raise ValueError("LLAMA_API_KEY environment variable is not set")
+
 # Load battlefield metadata and FAISS index
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
 faiss_index = faiss.read_index("battlefield.index")
@@ -38,8 +44,8 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     response: str
 
-LLAMA_API_KEY = "LLM|2118876695287932|IMjBSgTkyooJs5Xb8S7yvePCg-0"
-LLAMA_API_URL = "https://api.llama.com/v1/chat/completions"
+# Initialize Llama API client with API key
+client = LlamaAPIClient(api_key=LLAMA_API_KEY)
 
 def semantic_search_context(user_message: str, top_k=20) -> str:
     query_embedding = embedding_model.encode([user_message], convert_to_numpy=True)
@@ -68,13 +74,9 @@ def create_prompt(user_message: str) -> str:
 async def chat(request: ChatRequest):
     try:
         prompt = create_prompt(request.message)
-        headers = {
-            "Authorization": f"Bearer {LLAMA_API_KEY}",
-            "Content-Type": "application/json"
-        }
-        payload = {
-            "model": "Llama-4-Scout-17B-16E-Instruct-FP8",
-            "messages": [
+        
+        response = client.chat.completions.create(
+            messages=[
                 {
                     "role": "system",
                     "content": """
@@ -120,34 +122,66 @@ CONSTRAINTS:
                     "content": prompt
                 }
             ],
-            "temperature": 0.7,
-            "max_tokens": 5000
-        }
-        logger.info("Sending request to Llama API")
-        response = requests.post(LLAMA_API_URL, headers=headers, json=payload)
-        response.raise_for_status()
-        result = response.json()
-        logger.info(f"API Response: {json.dumps(result, indent=2)}")  # Debug log
-        # Handle the actual response format from the Llama API
-        if "completion_message" in result and "content" in result["completion_message"]:
-            content = result["completion_message"]["content"]
-            if isinstance(content, dict) and "text" in content:
-                return ChatResponse(response=content["text"])
-            elif isinstance(content, str):
-                return ChatResponse(response=content)
+            model="Cerebras-Llama-4-Scout-17B-16E-Instruct",
+            stream=False,
+            temperature=0.6,
+            max_completion_tokens=2048,
+            top_p=0.9,
+            repetition_penalty=1,
+            response_format={
+                "type": "json_schema",
+                "json_schema": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "general_explanation": {
+                                "type": "string",
+                                "description": "Overall explanation or summary"
+                            },
+                            "locations": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Name of the city or town"
+                                        },
+                                        "explanation": {
+                                            "type": "string",
+                                            "description": "Short reason behind selecting this location"
+                                        }
+                                    },
+                                    "required": ["name", "explanation"],
+                                    "additionalProperties": False
+                                },
+                                "description": "Array of location objects with individual analysis for each location"
+                            }
+                        },
+                        "required": ["general_explanation", "locations"],
+                        "additionalProperties": False
+                    }
+                }
+            }
+        )
+        
+        # Extract the response content
+        if hasattr(response, 'completion_message') and hasattr(response.completion_message, 'content'):
+            content = response.completion_message.content
+            if hasattr(content, 'text'):
+                return ChatResponse(response=content.text)
             else:
                 logger.error(f"Unexpected content format: {content}")
-                raise HTTPException(status_code=500, detail="Unexpected API response format")
+                raise HTTPException(status_code=500, detail="Unexpected content format in API response")
         else:
-            logger.error(f"Unexpected response format: {result}")
+            logger.error(f"Unexpected response format: {response}")
             raise HTTPException(status_code=500, detail="Unexpected API response format")
-    except requests.exceptions.RequestException as e:
-        logger.error(f"API request error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error communicating with Llama API: {str(e)}")
+            
     except Exception as e:
         logger.error(f"Unexpected error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
+    print("Starting server...")
     uvicorn.run(app, host="0.0.0.0", port=8000) 
