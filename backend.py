@@ -71,20 +71,80 @@ class ChatResponse(BaseModel):
 # Initialize Llama API client with API key
 client = LlamaAPIClient(api_key=LLAMA_API_KEY)
 
-def create_prompt(user_message: str) -> str:
-    context = (
-        "You are a battlefield analyst AI assistant. Use the following recent and semantically relevant battlefield events to answer the user's question about the Russia-Ukraine conflict.\n"
-        "Focus on threat assessment, targeting patterns, and escalation risks.\n\n"
-    )
-    context += semantic_search_context(user_message)
-    context += f"\nUser question: {user_message}\n"
-    return context
+# def create_prompt(user_message: str) -> str:
+#     context = (
+#         "You are a battlefield analyst AI assistant. Use the following recent and semantically relevant battlefield events to answer the user's question about the Russia-Ukraine conflict.\n"
+#         "Focus on threat assessment, targeting patterns, and escalation risks.\n\n"
+#     )
+#     context += semantic_search_context(user_message)
+#     context += f"\nUser question: {user_message}\n"
+#     return context
+
+
+# def create_prompt(user_message: str) -> str:
+#     user_message += f"\nUser question: {user_message}\n"
+#     return user_message
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     try:
-        prompt = create_prompt(request.message)
+        # First, extract keywords from the user's message
+        keyword_response = client.chat.completions.create(
+            messages=[
+                {
+                    "role": "system",
+                    "content": """
+You are an elite military intelligence keyword extraction specialist. Extract critical search terms from the provided text for threat assessment and intelligence retrieval systems.
+
+EXTRACT these keyword types with precision:
+- Threat entities (organizations, individuals, weapons systems)
+- Geographic locations (coordinates, regions, facilities, borders)
+- Temporal indicators (dates, timeframes, operational windows)
+- Military assets (equipment, vehicles, personnel classifications)
+- Operational terms (tactics, procedures, mission types)
+- Intelligence classifications (threat levels, capabilities, intentions)
+- Technical specifications (ranges, frequencies, capabilities)
+
+PRIORITIZE keywords that enable:
+- Rapid threat identification and correlation
+- Cross-reference with intelligence databases
+- Pattern recognition across multiple sources
+- Real-time situational awareness updates
+
+REQUIREMENTS:
+- Extract 8-15 keywords maximum
+- Include single words AND multi-word phrases
+- Rank by operational criticality (most critical first)
+- Focus on actionable intelligence terms
+- Exclude common military jargon unless contextually critical
+
+FORMAT: Return as comma-separated list, highest priority first.
+"""
+                },
+                {
+                    "role": "user",
+                    "content": request.message
+                }
+            ],
+            model="Cerebras-Llama-4-Maverick-17B-128E-Instruct",
+            stream=False,
+            temperature=0.3,
+            max_completion_tokens=100
+        )
         
+        # Extract keywords from response
+        keywords = ""
+        if hasattr(keyword_response, 'completion_message') and hasattr(keyword_response.completion_message, 'content'):
+            content = keyword_response.completion_message.content
+            if hasattr(content, 'text'):
+                keywords = content.text.strip()
+            else:
+                logger.warning("Unexpected keyword response format")
+        
+        # Enhance the original prompt with keywords for better RAG matching
+        enhanced_prompt = f"Original query: {request.message}\nRelevant keywords: {keywords}\n"
+        
+        # Now process the enhanced prompt with the original logic
         response = client.chat.completions.create(
             messages=[
                 {
@@ -129,10 +189,10 @@ CONSTRAINTS:
                 },
                 {
                     "role": "user",
-                    "content": prompt
+                    "content": enhanced_prompt
                 }
             ],
-            model="Cerebras-Llama-4-Scout-17B-16E-Instruct",
+            model="Cerebras-Llama-4-Maverick-17B-128E-Instruct",
             stream=False,
             temperature=0.6,
             max_completion_tokens=2048,
@@ -159,7 +219,7 @@ CONSTRAINTS:
                                         },
                                         "explanation": {
                                             "type": "string",
-                                            "description": "Short reason behind selecting this location"
+                                            "description": "Short reason for selecting this location"
                                         }
                                     },
                                     "required": ["name", "explanation"],
