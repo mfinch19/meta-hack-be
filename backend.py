@@ -6,6 +6,10 @@ import requests
 from typing import List, Optional
 import os
 import logging
+import re
+import faiss
+import numpy as np
+from sentence_transformers import SentenceTransformer
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -22,18 +26,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load the battlefield data
-def load_battlefield_data():
-    try:
-        with open('2024-05-24-2025-05-31-Russia-Ukraine.json', 'r') as f:
-            data = json.load(f)
-            logger.info(f"Successfully loaded {len(data)} battlefield events")
-            return data
-    except Exception as e:
-        logger.error(f"Error loading battlefield data: {str(e)}")
-        return []
-
-battlefield_data = load_battlefield_data()
+# Load battlefield metadata and FAISS index
+embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+faiss_index = faiss.read_index("battlefield.index")
+with open("battlefield_metadata.json") as f:
+    battlefield_metadata = json.load(f)
 
 class ChatRequest(BaseModel):
     message: str
@@ -44,54 +41,39 @@ class ChatResponse(BaseModel):
 LLAMA_API_KEY = "LLM|2118876695287932|IMjBSgTkyooJs5Xb8S7yvePCg-0"
 LLAMA_API_URL = "https://api.llama.com/v1/chat/completions"
 
+def semantic_search_context(user_message: str, top_k=20) -> str:
+    query_embedding = embedding_model.encode([user_message], convert_to_numpy=True)
+    D, I = faiss_index.search(query_embedding, top_k)
+    context = "Relevant battlefield events:\n"
+    for idx in I[0]:
+        event = battlefield_metadata[idx]
+        summary = (
+            f"{event.get('event_date', 'Unknown date')} — {event.get('location', 'Unknown')} ({event.get('admin1', '')}): "
+            f"{event.get('sub_event_type', '')} by {event.get('actor1', '')}. "
+            f"{event.get('notes', '')}"
+        )
+        context += f"- {summary}\n"
+    return context
+
 def create_prompt(user_message: str) -> str:
-    try:
-        # Create a context-aware prompt using the battlefield data
-        context = "You are a battlefield analyst AI assistant. Use the following data to provide accurate and insightful responses about the Russia-Ukraine conflict. Focus on threat assessment, target prediction, and strategic analysis.\n\n"
-        
-        # Get recent events and group them by location
-        recent_events = battlefield_data[-20:]  # Get last 20 events for better context
-        location_events = {}
-        
-        for event in recent_events:
-            location = event.get('location', 'Unknown location')
-            if location not in location_events:
-                location_events[location] = []
-            location_events[location].append(event)
-        
-        # Add location-specific context
-        context += "Recent battlefield events by location:\n"
-        for location, events in location_events.items():
-            context += f"\n{location}:\n"
-            for event in events:
-                event_type = event.get('event_type', 'Unknown event')
-                context += f"- {event_type}\n"
-        
-        context += f"\nUser question: {user_message}\n"
-        context += "Please provide a detailed analysis based on the available data. For threat assessments, consider factors such as:\n"
-        context += "1. Proximity to frontline activity\n"
-        context += "2. Recent military movements\n"
-        context += "3. Infrastructure importance\n"
-        context += "4. Historical attack patterns\n"
-        context += "5. Geographic significance"
-        
-        return context
-    except Exception as e:
-        logger.error(f"Error creating prompt: {str(e)}")
-        raise
+    context = (
+        "You are a battlefield analyst AI assistant. Use the following recent and semantically relevant battlefield events to answer the user's question about the Russia-Ukraine conflict.\n"
+        "Focus on threat assessment, targeting patterns, and escalation risks.\n\n"
+    )
+    context += semantic_search_context(user_message)
+    context += f"\nUser question: {user_message}\n"
+    return context
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     try:
         prompt = create_prompt(request.message)
-        
         headers = {
             "Authorization": f"Bearer {LLAMA_API_KEY}",
             "Content-Type": "application/json"
         }
-        
         payload = {
-            "model": "Llama-4-Maverick-17B-128E-Instruct-FP8",
+            "model": "Llama-4-Scout-17B-16E-Instruct-FP8",
             "messages": [
                 {
                     "role": "system",
@@ -103,16 +85,13 @@ async def chat(request: ChatRequest):
                 }
             ],
             "temperature": 0.7,
-            "max_tokens": 2000
+            "max_tokens": 8000
         }
-        
         logger.info("Sending request to Llama API")
         response = requests.post(LLAMA_API_URL, headers=headers, json=payload)
         response.raise_for_status()
-        
         result = response.json()
         logger.info(f"API Response: {json.dumps(result, indent=2)}")  # Debug log
-        
         # Handle the actual response format from the Llama API
         if "completion_message" in result and "content" in result["completion_message"]:
             content = result["completion_message"]["content"]
@@ -126,7 +105,6 @@ async def chat(request: ChatRequest):
         else:
             logger.error(f"Unexpected response format: {result}")
             raise HTTPException(status_code=500, detail="Unexpected API response format")
-        
     except requests.exceptions.RequestException as e:
         logger.error(f"API request error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error communicating with Llama API: {str(e)}")
