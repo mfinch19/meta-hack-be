@@ -14,7 +14,7 @@ dependencies = [
     "llama-index",
     "llama-index-readers-file",
     "sentence-transformers",
-    "faiss-cpu",
+    "faiss-gpu-cu12",
     "llama-api-client>=0.1.1",
     "ollama",
     "fastkml"
