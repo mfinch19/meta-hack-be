@@ -2,14 +2,13 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import json
-import requests
+import ollama
 from typing import List, Optional
 import os
 import logging
 import re
 import faiss
 import numpy as np
-from sentence_transformers import SentenceTransformer
 from llama_api_client import LlamaAPIClient
 
 # Set up logging
@@ -33,22 +32,22 @@ if not LLAMA_API_KEY:
     raise ValueError("LLAMA_API_KEY environment variable is not set")
 
 # Load battlefield metadata and FAISS index
-embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
 faiss_index = faiss.read_index("battlefield.index")
 with open("battlefield_metadata.json") as f:
     battlefield_metadata = json.load(f)
 
-class ChatRequest(BaseModel):
-    message: str
-
-class ChatResponse(BaseModel):
-    response: str
-
-# Initialize Llama API client with API key
-client = LlamaAPIClient(api_key=LLAMA_API_KEY)
+def get_embedding(text: str) -> np.ndarray:
+    response = ollama.embed(
+        model="mxbai-embed-large:latest",
+        input=text,
+        host="http://3.238.200.222:11434"
+    )
+    return np.array(response['embedding'])
 
 def semantic_search_context(user_message: str, top_k=20) -> str:
-    query_embedding = embedding_model.encode([user_message], convert_to_numpy=True)
+    query_embedding = get_embedding(user_message)
+    # Ensure the embedding is 2D for FAISS
+    query_embedding = query_embedding.reshape(1, -1)
     D, I = faiss_index.search(query_embedding, top_k)
     context = "Relevant battlefield events:\n"
     for idx in I[0]:
@@ -60,6 +59,15 @@ def semantic_search_context(user_message: str, top_k=20) -> str:
         )
         context += f"- {summary}\n"
     return context
+
+class ChatRequest(BaseModel):
+    message: str
+
+class ChatResponse(BaseModel):
+    response: str
+
+# Initialize Llama API client with API key
+client = LlamaAPIClient(api_key=LLAMA_API_KEY)
 
 def create_prompt(user_message: str) -> str:
     context = (

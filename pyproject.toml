@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "requests",
     "fastapi==0.95.2",
     "uvicorn==0.22.0",
     "pydantic==1.10.7",
@@ -15,4 +16,6 @@ dependencies = [
     "sentence-transformers",
     "faiss-cpu",
     "llama-api-client>=0.1.1",
+    "ollama",
+    "fastkml"
 ]

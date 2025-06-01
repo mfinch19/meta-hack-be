@@ -7,4 +7,6 @@ llama-index
 llama-index-readers-file
 sentence-transformers
 faiss-cpu
-llama-api-client==0.1.0 
+llama-api-client==0.1.0
+ollama
+fastkml

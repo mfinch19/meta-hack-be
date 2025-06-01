@@ -1,4 +1,5 @@
 *.json
 *.index
-.lock
-.venv
+*.lock
+*.venv
+*.kmz

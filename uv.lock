@@ -89,6 +89,19 @@ wheels = [
 ]
 
 [[package]]
+name = "arrow"
+version = "1.3.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "python-dateutil" },
+    { name = "types-python-dateutil" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/2e/00/0f6e8fcdb23ea632c866620cc872729ff43ed91d284c866b515c6342b173/arrow-1.3.0.tar.gz", hash = "sha256:d4540617648cb5f895730f1ad8c82a65f2dad0166f57b75f3ca54759c4d67a85", size = 131960, upload-time = "2023-09-30T22:11:18.25Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f8/ed/e97229a566617f2ae958a6b13e7cc0f585470eac730a73e9e82c32a3cdd2/arrow-1.3.0-py3-none-any.whl", hash = "sha256:c728b120ebc00eb84e01882a6f5e7927a53960aa990ce7dd2b10f39005a67f80", size = 66419, upload-time = "2023-09-30T22:11:16.072Z" },
+]
+
+[[package]]
 name = "attrs"
 version = "25.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -254,6 +267,20 @@ wheels = [
 ]
 
 [[package]]
+name = "fastkml"
+version = "1.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "arrow" },
+    { name = "pygeoif" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/6a/f4/759f7aa0e3647bec3a2750beaab7916f42443367f97c6087f8278e8ecec4/fastkml-1.1.0.tar.gz", hash = "sha256:a786a80733763c16f5505efd7160a526f43b093bde767c9b35e816459bc6074e", size = 87757, upload-time = "2024-12-02T09:43:09.429Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/86/6d/a40a85bde02b02f6fd50b313efa08393ee4cc0533760b99640b86c65ba47/fastkml-1.1.0-py3-none-any.whl", hash = "sha256:31a79801ec677046d68bf56f95837e9057ed49aa51dda5421c6726a239df645f", size = 107861, upload-time = "2024-12-02T09:43:07.716Z" },
+]
+
+[[package]]
 name = "filelock"
 version = "3.18.0"
 source = { registry = "https://pypi.org/simple" }
@@ -404,17 +431,18 @@ wheels = [
 
 [[package]]
 name = "httpx"
-version = "0.28.1"
+version = "0.27.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
     { name = "certifi" },
     { name = "httpcore" },
     { name = "idna" },
+    { name = "sniffio" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b1/df/48c586a5fe32a0f01324ee087459e112ebb7224f646c0b5023f5e79e9956/httpx-0.28.1.tar.gz", hash = "sha256:75e98c5f16b0f35b567856f597f06ff2270a374470a5c2392242528e3e3e42fc", size = 141406, upload-time = "2024-12-06T15:37:23.222Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/78/82/08f8c936781f67d9e6b9eeb8a0c8b4e406136ea4c3d1f89a5db71d42e0e6/httpx-0.27.2.tar.gz", hash = "sha256:f7c2be1d2f3c3c3160d441802406b206c2b76f5947b11115e6df10c6c65e66c2", size = 144189, upload-time = "2024-08-27T12:54:01.334Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2a/39/e50c7c3a983047577ee07d2a9e53faf5a69493943ec3f6a384bdc792deb2/httpx-0.28.1-py3-none-any.whl", hash = "sha256:d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad", size = 73517, upload-time = "2024-12-06T15:37:21.509Z" },
+    { url = "https://files.pythonhosted.org/packages/56/95/9377bcb415797e44274b51d46e3249eba641711cf3348050f76ee7b15ffc/httpx-0.27.2-py3-none-any.whl", hash = "sha256:7bb2708e112d8fdd7829cd4243970f0c223274051cb35ee80c03301ee29a3df0", size = 76395, upload-time = "2024-08-27T12:53:59.653Z" },
 ]
 
 [[package]]
@@ -834,9 +862,11 @@ source = { virtual = "." }
 dependencies = [
     { name = "faiss-cpu" },
     { name = "fastapi" },
+    { name = "fastkml" },
     { name = "llama-api-client" },
     { name = "llama-index" },
     { name = "llama-index-readers-file" },
+    { name = "ollama" },
     { name = "pydantic" },
     { name = "python-dotenv" },
     { name = "requests" },
@@ -848,11 +878,14 @@ dependencies = [
 requires-dist = [
     { name = "faiss-cpu" },
     { name = "fastapi", specifier = "==0.95.2" },
+    { name = "fastkml" },
     { name = "llama-api-client", specifier = ">=0.1.1" },
     { name = "llama-index" },
     { name = "llama-index-readers-file" },
+    { name = "ollama" },
     { name = "pydantic", specifier = "==1.10.7" },
     { name = "python-dotenv", specifier = "==1.0.0" },
+    { name = "requests" },
     { name = "requests", specifier = "==2.31.0" },
     { name = "sentence-transformers" },
     { name = "uvicorn", specifier = "==0.22.0" },
@@ -1119,6 +1152,18 @@ wheels = [
 ]
 
 [[package]]
+name = "ollama"
+version = "0.3.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "httpx" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a6/8e/60a9b065eb796ef3996451cbe2d8044f6b030696166693b9805ae33b8b4c/ollama-0.3.3.tar.gz", hash = "sha256:f90a6d61803117f40b0e8ff17465cab5e1eb24758a473cfe8101aff38bc13b51", size = 10390, upload-time = "2024-09-09T17:23:43.495Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6a/ca/d22905ac3f768523f778189d38c9c6cd9edf4fa9dd09cb5a3fc57b184f90/ollama-0.3.3-py3-none-any.whl", hash = "sha256:ca6242ce78ab34758082b7392df3f9f6c2cb1d070a9dede1a4c545c929e16dba", size = 10267, upload-time = "2024-09-09T17:23:41.841Z" },
+]
+
+[[package]]
 name = "openai"
 version = "1.82.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1288,6 +1333,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/43/5f/e53a850fd32dddefc998b6bfcbda843d4ff5b0dcac02a92e414ba6c97d46/pydantic-1.10.7.tar.gz", hash = "sha256:cfc83c0678b6ba51b0532bea66860617c4cd4251ecf76e9846fa5a9f3454e97e", size = 344063, upload-time = "2023-03-22T20:02:36.127Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/8d/e1/d9219c4e4161a511158e531a84aa719087064d208c2bf87df5c58812f190/pydantic-1.10.7-py3-none-any.whl", hash = "sha256:0cd181f1d0b1d00e2b705f1bf1ac7799a2d938cce3376b8007df62b29be3c2c6", size = 157187, upload-time = "2023-03-22T20:02:34.311Z" },
+]
+
+[[package]]
+name = "pygeoif"
+version = "1.5.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/be/2e/9f2e369b293e84acabd34df5cc189ac519d7c1bebfd56f5b3ca5bfe1a57b/pygeoif-1.5.1.tar.gz", hash = "sha256:f27a6b6a1ecb87aeacc2b51bcc59ca79be70ed12a0104de8601478b213dd5d81", size = 41210, upload-time = "2024-12-05T20:47:08.134Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ea/16/58211b90cc314f7fa4f7d7124c770a6ca67ffd57e2b3937ed557f9ac9f57/pygeoif-1.5.1-py3-none-any.whl", hash = "sha256:2210cca8707c2858885525330db2164321218bb676fe0900123eed94624aab34", size = 28075, upload-time = "2024-12-05T20:47:05.875Z" },
 ]
 
 [[package]]
@@ -1772,6 +1829,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/11/53/ce18470914ab6cfbec9384ee565d23c4d1c55f0548160b1c7b33000b11fd/triton-3.3.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:b68c778f6c4218403a6bd01be7484f6dc9e20fe2083d22dd8aef33e3b87a10a3", size = 156504509, upload-time = "2025-04-09T20:27:40.413Z" },
     { url = "https://files.pythonhosted.org/packages/7d/74/4bf2702b65e93accaa20397b74da46fb7a0356452c1bb94dbabaf0582930/triton-3.3.0-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:47bc87ad66fa4ef17968299acacecaab71ce40a238890acc6ad197c3abe2b8f1", size = 156516468, upload-time = "2025-04-09T20:27:48.196Z" },
     { url = "https://files.pythonhosted.org/packages/0a/93/f28a696fa750b9b608baa236f8225dd3290e5aff27433b06143adc025961/triton-3.3.0-cp313-cp313t-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:ce4700fc14032af1e049005ae94ba908e71cd6c2df682239aed08e49bc71b742", size = 156580729, upload-time = "2025-04-09T20:27:55.424Z" },
+]
+
+[[package]]
+name = "types-python-dateutil"
+version = "2.9.0.20250516"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ef/88/d65ed807393285204ab6e2801e5d11fbbea811adcaa979a2ed3b67a5ef41/types_python_dateutil-2.9.0.20250516.tar.gz", hash = "sha256:13e80d6c9c47df23ad773d54b2826bd52dbbb41be87c3f339381c1700ad21ee5", size = 13943, upload-time = "2025-05-16T03:06:58.385Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c5/3f/b0e8db149896005adc938a1e7f371d6d7e9eca4053a29b108978ed15e0c2/types_python_dateutil-2.9.0.20250516-py3-none-any.whl", hash = "sha256:2b2b3f57f9c6a61fba26a9c0ffb9ea5681c9b83e69cd897c6b5f668d9c0cab93", size = 14356, upload-time = "2025-05-16T03:06:57.249Z" },
 ]
 
 [[package]]
