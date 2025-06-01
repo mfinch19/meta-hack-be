@@ -181,7 +181,7 @@ def create_prompt(user_message: str) -> str:
 async def chat(request: ChatRequest):
     try:
         client = LlamaAPIClient(api_key=os.getenv("LLAMA_API_KEY", LLAMA_API_KEY))
-        prompt = create_prompt(request.message)
+        prompt = create_prompt(request.message + " today's date is 2025-06-01.")
         # First, extract keywords from the user's message
         
         # Now process the enhanced prompt with the original logic
@@ -193,6 +193,8 @@ async def chat(request: ChatRequest):
 You are a strategic analyst AI specializing in comprehensive situational assessment. Your role is to provide structured, evidence-based analysis following a systematic reasoning framework.
 
 Analyze the user's question using the data I've provided. In your responses, include specific data points that you've used to support your conclusions. 
+
+Today's date is 2025-06-01, so use that date as reference. 
 
 CONSTRAINTS:
 - Keep each step to 1-2 sentences maximum
@@ -212,7 +214,7 @@ Use specific datapoints in your responses for the locations. For example, you  c
             ],
             model="Cerebras-Llama-4-Maverick-17B-128E-Instruct",
             stream=False,
-            temperature=0.4,
+            temperature=0.6,
             max_completion_tokens=2048,
             top_p=0.9,
             repetition_penalty=1,
