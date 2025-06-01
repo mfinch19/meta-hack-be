@@ -5,13 +5,19 @@ import ollama
 from fastkml import kml
 import zipfile
 import os
+import argparse
 
 print("Loading data...")
 
 # Initialize Ollama client with remote host
 ollama_client = ollama.Client(host="http://3.238.200.222:11434")
 
-def get_embeddings(texts, batch_size=500):
+# Parse command line arguments
+parser = argparse.ArgumentParser(description='Build FAISS index for battlefield events.')
+parser.add_argument('--batch-size', type=int, default=10000, help='Batch size for embedding generation')
+args = parser.parse_args()
+
+def get_embeddings(texts, batch_size=args.batch_size):
     embeddings = []
     for i in range(0, len(texts), batch_size):
         batch = texts[i:i + batch_size]
