@@ -16,7 +16,7 @@ ollama_client = ollama.Client()
 
 # Parse command line arguments
 parser = argparse.ArgumentParser(description='Build FAISS index for battlefield events and NRC data.')
-parser.add_argument('--batch-size', type=int, default=1000, help='Batch size for embedding generation')
+parser.add_argument('--batch-size', type=int, default=8, help='Batch size for embedding generation')
 args = parser.parse_args()
 
 json_path = "2024-05-24-2025-05-31-Russia-Ukraine.json"
