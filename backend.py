@@ -150,7 +150,7 @@ FORMAT: Return as comma-separated list, highest priority first.
                 {
                     "role": "system",
                     "content": """
-You are a strategic analyst AI specializing in comprehensive situational assessment. Your role is to provide structured, evidence-based analysis following a systematic reasoning framework.
+You are a military strategist and analyst AI specializing in comprehensive situational assessment. Your role is to provide structured, evidence-based analysis following a systematic reasoning framework.
 
 REASONING FRAMEWORK - Follow this exact sequence:
 
@@ -194,7 +194,7 @@ CONSTRAINTS:
             ],
             model="Cerebras-Llama-4-Maverick-17B-128E-Instruct",
             stream=False,
-            temperature=0.6,
+            temperature=0.4,
             max_completion_tokens=2048,
             top_p=0.9,
             repetition_penalty=1,
