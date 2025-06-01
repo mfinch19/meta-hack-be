@@ -36,11 +36,13 @@ faiss_index = faiss.read_index("battlefield.index")
 with open("battlefield_metadata.json") as f:
     battlefield_metadata = json.load(f)
 
+# Initialize Ollama client with remote host
+ollama_client = ollama.Client(host="http://3.238.200.222:11434")
+
 def get_embedding(text: str) -> np.ndarray:
-    response = ollama.embed(
+    response = ollama_client.embed(
         model="mxbai-embed-large:latest",
-        input=text,
-        host="http://3.238.200.222:11434"
+        input=text
     )
     return np.array(response['embedding'])
 

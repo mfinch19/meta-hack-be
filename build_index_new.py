@@ -8,14 +8,16 @@ import os
 
 print("Loading data...")
 
+# Initialize Ollama client with remote host
+ollama_client = ollama.Client(host="http://3.238.200.222:11434")
+
 def get_embeddings(texts, batch_size=500):
     embeddings = []
     for i in range(0, len(texts), batch_size):
         batch = texts[i:i + batch_size]
-        response = ollama.embed(
+        response = ollama_client.embed(
             model="mxbai-embed-large:latest",
-            input=batch,
-            host="http://3.238.200.222:11434"
+            input=batch
         )
         embeddings.extend(response['embeddings'])
     return np.array(embeddings)
@@ -37,9 +39,9 @@ if os.path.exists(kmz_path):
             doc = f.read()
         k = kml.KML()
         k.from_string(doc.encode('utf-8'))
-        for feature in k.features():
-            for subfeature in feature.features():
-                for placemark in subfeature.features():
+        for feature in k.features:
+            for subfeature in feature.features:
+                for placemark in subfeature.features:
                     osint_event = {
                         'event_id_cnty': 'osint_' + (placemark.name or ''),
                         'event_date': '',  # Optionally parse from description
